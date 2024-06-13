@@ -1,0 +1,1 @@
+- Rewrite "strtod" function by yourself.
