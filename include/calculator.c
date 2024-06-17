@@ -1,9 +1,11 @@
 #include "../header/global_vars.h"
+#include "../header/stack.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 char delimiters[TYPE_COUNT][11] = {"0123456789", "+-*/", "()"};
+int token_count;
 
 int check_type(char ch) {
     for (int i = 0; i < TYPE_COUNT; i++) {
@@ -59,6 +61,43 @@ Token *tokenise(char *str) {
             i += count - 1;
             current_token_count++;
         }
+
+        token[current_token_count].type = end;
+        token_count = current_token_count;
     }
     return token;
+}
+
+void parse(Token *t) {
+    Stack *stack;
+    Token *postfix;
+
+    postfix = malloc(token_count * sizeof(Token));
+
+    if (postfix == NULL) {
+        perror("Failed to allocate memory.");
+        exit(EXIT_FAILURE);
+    }
+
+    init_stack(stack);
+    int postfix_count = 0;
+    for (int i = 0; t[i].type == 4; i++) {
+        if (t[i].type == 0) {
+            postfix[postfix_count++] = t[i];
+        } else if (t[i].type == par) {
+            if (t[i].value.par == '(') {
+                push(stack, t[i]);
+            } else {
+                for (int i = 0; stack->size == 0; i++) {
+                    if (stack->data[i].type != par) {
+                        postfix[postfix_count++] = pop(stack);
+                    }
+                    if (stack->data[i].type == par) {
+                        if (stack->data->value.par == '(') {
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

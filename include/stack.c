@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void init_stack(Stack *s, int c) {
-    s->capacity = c;
+void init_stack(Stack *s) {
+    s->capacity = INITIAL_CAPACITY;
     s->size = 0;
     s->top = -1;
 
@@ -44,6 +44,26 @@ Token *peek(Stack *s) {
     if (s->size == 0) {
         fprintf(stderr, "Stack is empty");
         exit(EXIT_FAILURE);
-        return &s->data[s->top];
+    }
+    return &s->data[s->top];
+}
+
+int is_empty(Stack *s) {
+    if (s->size == 0) {
+        return 1;
+    } else {
+        return 0;
     }
 }
+
+int is_full(Stack *s) {
+    if (s->size == s->capacity) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int size(Stack *s) { return s->size; }
+int capacity(Stack *s) { return s->capacity; }
+void free_stack(Stack *s) { free(s); }

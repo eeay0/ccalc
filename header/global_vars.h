@@ -1,13 +1,15 @@
+#ifndef GLOBAL_VARS_H
+#define GLOBAL_VARS_H
+
 #define TYPE_COUNT 3
 #define INITIAL_CAPACITY 10;
-typedef enum { num, op, par } Type;
+typedef enum { OPERAND, OPERATOR, END } Type;
 
 typedef struct {
     Type type;
     union {
-        double num;
-        char op;
-        char par;
+        double operand;
+        char _operator;
     } value;
 } Token;
 
@@ -17,3 +19,5 @@ typedef struct {
     int capacity;
     int top;
 } Stack;
+
+#endif // !GLOBAL_VARS_H
