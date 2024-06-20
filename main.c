@@ -15,32 +15,46 @@ typedef struct {
         double num;
         char op;
     } value;
-} Token;
+} Element;
 
-Token *tokenise(char *str);
+typedef struct {
+    Element *data;
+    int top;
+    size_t size;
+    size_t capacity;
+} Stack;
+
+Element *tokenise(char *str);
+void initStack(Stack *s);
+void freeStack(Stack *s);
+void push(Stack *s, Element data);
+Element pop(Stack *s);
+Element peek(Stack *s);
+bool isEmpty(Stack *s);
+bool isFull(Stack *s);
 
 int main(int argc, char *argv[]) {
     char test[30] = "3+ 43.67 -(6/2.5) * 2.2";
-    Token *token = tokenise(test);
+    Element *tokens = tokenise(test);
     printf("%s\n", test);
-    if (token == NULL) {
+    if (tokens == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; token[i].type != END; i++) {
-        if (token[i].type == OPERAND) {
-            printf("Operand: %lf\n", token[i].value.num);
-        } else if (token[i].type == OPERATOR) {
-            printf("Operator: %c\n", token[i].value.op);
+    for (int i = 0; tokens[i].type != END; i++) {
+        if (tokens[i].type == OPERAND) {
+            printf("Operand: %lf\n", tokens[i].value.num);
+        } else if (tokens[i].type == OPERATOR) {
+            printf("Operator: %c\n", tokens[i].value.op);
         }
     }
 
-    free(token);
+    free(tokens);
     return EXIT_SUCCESS;
 }
 
-Token *tokenise(char *str) {
-    Token *token = (Token *)malloc(INITIAL_CAPACITY * sizeof(Token));
+Element *tokenise(char *str) {
+    Element *token = (Element *)malloc(INITIAL_CAPACITY * sizeof(Element));
     int token_count = 0;
     int max_length = INITIAL_CAPACITY;
     if (token == NULL) {
@@ -50,7 +64,7 @@ Token *tokenise(char *str) {
     for (int i = 0; i <= strlen(str); i++) {
         if (token_count == max_length) {
             max_length *= 2;
-            Token *tmp_token = (Token *)realloc(token, max_length * sizeof(Token));
+            Element *tmp_token = (Element *)realloc(token, max_length * sizeof(Element));
             if (tmp_token == NULL) {
                 fprintf(stderr, "Memory reallocation failed\n");
                 exit(EXIT_FAILURE);
@@ -79,3 +93,41 @@ Token *tokenise(char *str) {
 
     return token;
 }
+
+void initStack(Stack *s) {
+    s->capacity = INITIAL_CAPACITY;
+    s->data = malloc(s->capacity * sizeof(Element));
+    if (s->data == NULL) {
+        fprintf(stderr, "Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+    s->top = -1;
+    s->size = 0;
+}
+void freeStack(Stack *s) { free(s); }
+void push(Stack *s, Element data) {
+    if (s->size == s->capacity) {
+        s->capacity *= 2;
+        Element *tmp = realloc(s->data, s->capacity * sizeof(Element));
+        if (tmp == NULL) {
+            fprintf(stderr, "Memory allocation failed");
+            exit(EXIT_FAILURE);
+        }
+        s->data = tmp;
+    }
+    s->data[++s->top] = data;
+    s->size++;
+    s->data[s->top + 1].type = END;
+}
+bool isEmpty(Stack *s);
+bool isFull(Stack *s);
+Element pop(Stack *s) {
+    if (isEmpty(s)) {
+        fprintf(stderr, "Stack is empty: POP");
+        exit(EXIT_FAILURE);
+    }
+    Element tmp = s->data[s->top];
+    s->data[s->top--].type = END;
+    return tmp;
+}
+Element peek(Stack *s) {}
