@@ -54,13 +54,15 @@ int main(int argc, char *argv[]) {
     Element e2 = {OPERATOR, .value.op = '+'};
     Element e3 = {OPERAND, .value.num = 3.5};
     Element e4 = {OPERATOR, .value.op = '*'};
-    Element e5 = {END, .value.num = 0.0};  // END type, value is arbitrary
 
     Stack s;
     initStack(&s);
     push(&s, e1);
     push(&s, e2);
-    push(&s, e5);
+    push(&s, e3);
+    push(&s, e4);
+    printStack(&s);
+    Element tmp = pop(&s);
     printStack(&s);
 
     freeStack(&s);
@@ -131,17 +133,6 @@ void push(Stack *s, Element data) {
     }
     s->data[++s->top] = data;
     s->size++;
-    if (s->size == s->capacity) {
-        s->capacity *= 2;
-        Element *tmp = realloc(s->data, s->capacity * sizeof(Element));
-        if (tmp == NULL) {
-            fprintf(stderr, "Memory allocation failed");
-            exit(EXIT_FAILURE);
-        }
-        s->data = tmp;
-    }
-    Element endElement = {END, .value.num = 0.0};
-    s->data[++s->top] = endElement;
 }
 bool isEmpty(Stack *s) { return s->size == 0; }
 bool isFull(Stack *s) { return s->size == s->capacity; }
@@ -167,11 +158,14 @@ void printStack(Stack *s) {
         fprintf(stderr, "Stack is empty: printStack");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; s->data->type == END; i++)
-        if (s->data->type == OPERAND)
-            printf("Operand: %lf\n", s->data->value.num);
-        else if (s->data->type == OPERATOR)
-            printf("Operator: %c\n", s->data->value.op);
+
+    for (int i = 0; i <= s->top; i++) {
+        if (s->data[i].type == OPERAND) {
+            printf("Operand: %lf\n", s->data[i].value.num);
+        } else if (s->data[i].type == OPERATOR) {
+            printf("Operator: %c\n", s->data[i].value.op);
+        }
+    }
 }
 
 void initList(List *l) {
