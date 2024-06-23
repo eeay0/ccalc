@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -47,10 +46,24 @@ void freeList(List *l);
 void appendList(List *l, Element e);
 void printList(List *l);
 
+bool checkPrec(char op1, char op2);
 List infixToPostfix(Element *t);
 
 int main(int argc, char *argv[]) {
-    printf("All tests passed!\n");
+    Element e1 = {OPERAND, .value.num = 5.0};
+    Element e2 = {OPERATOR, .value.op = '+'};
+    Element e3 = {OPERAND, .value.num = 3.5};
+    Element e4 = {OPERATOR, .value.op = '*'};
+    Element e5 = {END, .value.num = 0.0};  // END type, value is arbitrary
+
+    Stack s;
+    initStack(&s);
+    push(&s, e1);
+    push(&s, e2);
+    push(&s, e5);
+    printStack(&s);
+
+    freeStack(&s);
     return EXIT_SUCCESS;
 }
 
@@ -127,7 +140,8 @@ void push(Stack *s, Element data) {
         }
         s->data = tmp;
     }
-    s->data[s->top + 1].type = END;
+    Element endElement = {END, .value.num = 0.0};
+    s->data[++s->top] = endElement;
 }
 bool isEmpty(Stack *s) { return s->size == 0; }
 bool isFull(Stack *s) { return s->size == s->capacity; }
@@ -153,13 +167,11 @@ void printStack(Stack *s) {
         fprintf(stderr, "Stack is empty: printStack");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; s->data->type != END; i++) {
-        if (s->data->type == OPERAND) {
+    for (int i = 0; s->data->type == END; i++)
+        if (s->data->type == OPERAND)
             printf("Operand: %lf\n", s->data->value.num);
-        } else if (s->data->type == OPERATOR) {
+        else if (s->data->type == OPERATOR)
             printf("Operator: %c\n", s->data->value.op);
-        }
-    }
 }
 
 void initList(List *l) {
@@ -187,16 +199,26 @@ void printList(List *l) {
         fprintf(stderr, "List is empty: printList");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; l->data->type != END; i++) {
-        if (l->data->type == OPERAND) {
+    for (int i = 0; l->data->type != END; i++)
+        if (l->data->type == OPERAND)
             printf("Operand: %lf\n", l->data->value.num);
-        } else if (l->data->type == OPERATOR) {
+        else if (l->data->type == OPERATOR)
             printf("Operator: %c\n", l->data->value.op);
-        }
-    }
+}
+bool checkPrec(char op1, char op2) {
+    return (((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')) || (op1 == op2));
 }
 List infixToPostfix(Element *t) {
     List postfix;
-    Stack s;
+    Stack *s;
+    for (int i = 0; t[i].type != END; i++) {
+        Element temp = peek(s);
+        if (t[i].type == OPERAND) {
+            appendList(&postfix, t[i]);
+        } else if (isEmpty(s) && checkPrec(t[i].value.op, temp.value.op)) {
+            appendList(&postfix, pop(s));
+            push(s, t[i]);
+        }
+    }
     return postfix;
 }
